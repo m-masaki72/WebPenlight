@@ -1,0 +1,22 @@
+{
+  "name": "スマホでペンライト",
+  "short_name": "ペンライト",
+  "start_url": "/WebPenlight/",
+  "scope": "/WebPenlight/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "description": "スマートフォンをペンライトの代わりにして使えるWebアプリです。",
+  "icons": [
+    {
+      "src": "/WebPenlight/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/WebPenlight/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

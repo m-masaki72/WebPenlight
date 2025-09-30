@@ -1,0 +1,50 @@
+/* 画面全体のちらつきを防ぎ、タッチ操作をスムーズにします */
+body {
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+/* 表示する文字のスタイル */
+.display-text-style {
+    /* フォントファミリーはJSで動的に設定するため、ここでは指定しません */
+    /* 文字が見やすくなるように影をつけます */
+    text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.5);
+}
+/* 縦書き用のスタイル */
+.vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+/* コントロールパネルを非表示にするためのスタイル */
+.controls-hidden {
+    transform: translateY(100%);
+}
+/* プリセットの保存モード時のスタイル */
+.preset-save-mode .preset-slot {
+    animation: pulse-border 1.5s infinite;
+}
+@keyframes pulse-border {
+    0%, 100% { border-color: #6366f1; } /* indigo-500 */
+    50% { border-color: #a5b4fc; } /* indigo-300 */
+}
+
+/* スクロールバーのスタイルをモダンにする (Chrome, Safari, Edge) */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 8px; /* スクロールバーの幅 */
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent; /* トラックの背景は透明に */
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* スクロールバーの色 (Tailwindのgray-600) */
+    border-radius: 20px; /* 角を丸くする */
+    border: 2px solid transparent; /* パディングのような効果 */
+    background-clip: content-box;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280; /* ホバー時の色 (Tailwindのgray-500) */
+}
+
+/* スクロールバーのスタイル (Firefox) */
+.overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 transparent; /* [つまみ色] [トラック色] */
+}
