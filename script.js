@@ -52,23 +52,37 @@ function updateColor(color) {
     lightStickScreen.style.backgroundColor = color;
     colorPicker.value = color;
     hexInput.value = color;
+    saveCurrentSettings();
 }
 function updateText(text) {
     displayText.textContent = text;
     textInput.value = text;
+    saveCurrentSettings();
 }
 function updateFont(font) {
     displayText.style.fontFamily = font;
     fontSelect.value = font;
+    saveCurrentSettings();
 }
 function updateOrientation(isVerticalFlag) {
     isVertical = isVerticalFlag;
     displayText.classList.toggle('vertical-text', isVertical);
     orientationToggle.textContent = isVertical ? '横書きにする' : '縦書きにする';
+    saveCurrentSettings();
 }
 function toggleControls() {
     isControlsVisible = !isControlsVisible;
     controls.classList.toggle('controls-hidden', !isControlsVisible);
+}
+function saveCurrentSettings() {
+  const settings = {
+    color: hexInput.value,
+    text: textInput.value,
+    font: fontSelect.value,
+    isVertical: isVertical
+  };
+  // オブジェクトをJSON文字列に変換して保存
+  localStorage.setItem('penlightSettings', JSON.stringify(settings));
 }
 
 // --- 共有機能 ---
@@ -218,6 +232,18 @@ function initApp() {
     colorPalette.addEventListener('click', (e) => {
         if (e.target.dataset.color) updateColor(e.target.dataset.color);
     });
+
+     // localStorageから前回保存した設定を読み込む
+    const savedSettings = localStorage.getItem('penlightSettings');
+    if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        // 保存された設定がnullでないことを確認してから適用
+        if(settings.color) updateColor(settings.color);
+        if(settings.text) updateText(settings.text);
+        if(settings.font) updateFont(settings.font);
+        // isVerticalはブーリアンなので存在チェックのみ
+        if(typeof settings.isVertical !== 'undefined') updateOrientation(settings.isVertical);
+    }
     
     const params = new URLSearchParams(window.location.search);
 
