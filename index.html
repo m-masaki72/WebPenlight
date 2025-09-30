@@ -65,7 +65,7 @@
 
                     <!-- フォントの選択 -->
                     <div class="flex items-center space-x-3">
-                        <label for="font-select" class="text-white text-sm font-bold w-20">フォント</label>
+                        <label for="font-select" class="text-white text-sm font-bold w-44">フォント</label>
                         <select id="font-select" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-center">
                             <option value="'Mochiy Pop One', sans-serif">かわいい</option>
                             <option value="'RocknRoll One', sans-serif">かっこいい</option>
@@ -75,6 +75,12 @@
                             <option value="'Shippori Mincho', serif">モダン明朝</option>
                             <option value="'DotGothic16', sans-serif">ドット</option>
                         </select>
+
+                        <div id="size-controls" class="w-full grid grid-cols-3 gap-2">
+                            <button data-size="small" class="size-button  w-full bg-gray-600 text-white rounded-lg py-2 border border-gray-500 hover:bg-gray-500 transition-colors">小</button>
+                            <button data-size="medium" class="size-button w-full bg-gray-600 text-white rounded-lg py-2 border border-gray-500 hover:bg-gray-500 transition-colors">中</button>
+                            <button data-size="large" class="size-button w-full bg-gray-600 text-white rounded-lg py-2 border border-gray-500 hover:bg-gray-500 transition-colors">大</button>
+                        </div>
                     </div>
 
                     <!-- テキスト向きの切り替え -->

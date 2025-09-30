@@ -22,8 +22,14 @@ body {
     animation: pulse-border 1.5s infinite;
 }
 @keyframes pulse-border {
-    0%, 100% { border-color: #6366f1; } /* indigo-500 */
-    50% { border-color: #a5b4fc; } /* indigo-300 */
+    0%, 100% { border-color: #6366f1; }
+    50% { border-color: #a5b4fc; }
+}
+
+.active-size-button {
+    background-color: #4f46e5   !important;
+    border-color: #6366f1  !important;
+    font-weight: bold;
 }
 
 /* スクロールバーのスタイルをモダンにする (Chrome, Safari, Edge) */

@@ -10,6 +10,7 @@ const textInput = document.getElementById('text-input');
 const colorPalette = document.getElementById('color-palette');
 const orientationToggle = document.getElementById('orientation-toggle');
 const fontSelect = document.getElementById('font-select');
+const sizeControls = document.getElementById('size-controls');
 
 const shareButton = document.getElementById('share-button');
 const qrcodeModal = document.getElementById('qrcode-modal');
@@ -24,6 +25,7 @@ const presetMessage = document.getElementById('preset-message');
 
 // --- 状態管理 ---
 let isVertical = false;
+let currentSize = 'medium';
 let isControlsVisible = true;
 let isSaveMode = false;
 const PRESET_KEY = 'lightStickPresets';
@@ -36,6 +38,13 @@ hexInput.addEventListener('input', (e) => {
 });
 textInput.addEventListener('input', (e) => updateText(e.target.value));
 fontSelect.addEventListener('change', (e) => updateFont(e.target.value));
+sizeControls.addEventListener('click', (e) => {
+    const button = e.target.closest('.size-button');
+    if (button) {
+        // updateSize関数を呼び出す
+        updateSize(button.dataset.size);
+    }
+});
 orientationToggle.addEventListener('click', () => {
     isVertical = !isVertical;
     updateOrientation(isVertical);
@@ -64,6 +73,22 @@ function updateFont(font) {
     fontSelect.value = font;
     saveCurrentSettings();
 }
+function updateSize(size) {
+    currentSize = size;
+    const sizeMap = {
+        small: '10vw',
+        medium: '15vw',
+        large: '20vw'
+    };
+    // 画面幅に応じて計算されたフォントサイズを適用
+    displayText.style.fontSize = sizeMap[size] || sizeMap['medium'];
+    
+    // ボタンの見た目を更新
+    document.querySelectorAll('.size-button').forEach(btn => {
+        btn.classList.toggle('active-size-button', btn.dataset.size === size);
+    });
+    saveCurrentSettings();
+}
 function updateOrientation(isVerticalFlag) {
     isVertical = isVerticalFlag;
     displayText.classList.toggle('vertical-text', isVertical);
@@ -79,6 +104,7 @@ function saveCurrentSettings() {
     color: hexInput.value,
     text: textInput.value,
     font: fontSelect.value,
+    size: currentSize,
     isVertical: isVertical
   };
   // オブジェクトをJSON文字列に変換して保存
@@ -96,6 +122,7 @@ function generateShareQr() {
     if(settings.c) params.append('c', settings.c);
     if(settings.t) params.append('t', settings.t);
     if(settings.f) params.append('f', settings.f);
+    if(settings.s) params.append('s', settings.s);
     if(settings.v) params.append('v', settings.v);
 
     // 2. プリセット情報をパラメータに追加
@@ -241,6 +268,7 @@ function initApp() {
         if(settings.color) updateColor(settings.color);
         if(settings.text) updateText(settings.text);
         if(settings.font) updateFont(settings.font);
+        if(settings.size) updateSize(settings.size);
         // isVerticalはブーリアンなので存在チェックのみ
         if(typeof settings.isVertical !== 'undefined') updateOrientation(settings.isVertical);
     }
@@ -282,6 +310,11 @@ function initApp() {
         updateText(params.get('t') || '');
         updateFont(params.get('f') || fontSelect.options[0].value);
         updateOrientation(params.get('v') === '1');
+
+        // sizeをURLパラメータから復元
+        const sizeParam = params.get('s');
+        const sizeMap = { s: 'small', m: 'medium', l: 'large' };
+        updateSize(sizeMap[sizeParam] || 'medium');
     } else {
         displayText.style.fontFamily = fontSelect.value;
     }
