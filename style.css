@@ -1,11 +1,9 @@
-/* 画面全体のちらつきを防ぎ、タッチ操作をスムーズにします */
+/* ちらつきを防ぎ、タッチ操作をスムーズにします */
 body {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 /* 表示する文字のスタイル */
 .display-text-style {
-    /* フォントファミリーはJSで動的に設定するため、ここでは指定しません */
-    /* 文字が見やすくなるように影をつけます */
     text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.5);
 }
 /* 縦書き用のスタイル */
@@ -25,32 +23,29 @@ body {
     0%, 100% { border-color: #6366f1; }
     50% { border-color: #a5b4fc; }
 }
-
+/* アクティブなサイズボタンのスタイル */
 .active-size-button {
     background-color: #4f46e5   !important;
     border-color: #6366f1  !important;
     font-weight: bold;
 }
-
-/* スクロールバーのスタイルをモダンにする (Chrome, Safari, Edge) */
+/* スクロールバーのスタイル */
 .overflow-y-auto::-webkit-scrollbar {
-    width: 8px; /* スクロールバーの幅 */
+    width: 8px;
 }
 .overflow-y-auto::-webkit-scrollbar-track {
-    background: transparent; /* トラックの背景は透明に */
+    background: transparent;
 }
 .overflow-y-auto::-webkit-scrollbar-thumb {
-    background-color: #4b5563; /* スクロールバーの色 (Tailwindのgray-600) */
-    border-radius: 20px; /* 角を丸くする */
-    border: 2px solid transparent; /* パディングのような効果 */
+    background-color: #4b5563;
+    border-radius: 20px;
+    border: 2px solid transparent;
     background-clip: content-box;
 }
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-    background-color: #6b7280; /* ホバー時の色 (Tailwindのgray-500) */
+    background-color: #6b7280;
 }
-
-/* スクロールバーのスタイル (Firefox) */
 .overflow-y-auto {
     scrollbar-width: thin;
-    scrollbar-color: #4b5563 transparent; /* [つまみ色] [トラック色] */
+    scrollbar-color: #4b5563 transparent;
 }

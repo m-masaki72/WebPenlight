@@ -3,7 +3,6 @@ const lightStickScreen = document.getElementById('light-stick-screen');
 const displayText = document.getElementById('display-text');
 const controls = document.getElementById('controls');
 const dragHandle = document.getElementById('drag-handle');
-
 const colorPicker = document.getElementById('color-picker');
 const hexInput = document.getElementById('hex-input');
 const textInput = document.getElementById('text-input');
@@ -11,17 +10,17 @@ const colorPalette = document.getElementById('color-palette');
 const orientationToggle = document.getElementById('orientation-toggle');
 const fontSelect = document.getElementById('font-select');
 const sizeControls = document.getElementById('size-controls');
-
 const shareButton = document.getElementById('share-button');
 const qrcodeModal = document.getElementById('qrcode-modal');
 const qrcodeCanvas = document.getElementById('qrcode-canvas');
 const closeModalButton = document.getElementById('close-modal-button');
 const shareUrlInput = document.getElementById('share-url-input');
 const copyUrlButton = document.getElementById('copy-url-button');
-
 const presetContainer = document.getElementById('preset-container');
 const savePresetButton = document.getElementById('save-preset-button');
 const presetMessage = document.getElementById('preset-message');
+const fullscreenToggle = document.getElementById('fullscreen-toggle');
+const fullscreenText = document.getElementById('fullscreen-text');
 
 // --- 状態管理 ---
 let isVertical = false;
@@ -40,21 +39,29 @@ textInput.addEventListener('input', (e) => updateText(e.target.value));
 fontSelect.addEventListener('change', (e) => updateFont(e.target.value));
 sizeControls.addEventListener('click', (e) => {
     const button = e.target.closest('.size-button');
-    if (button) {
-        // updateSize関数を呼び出す
-        updateSize(button.dataset.size);
-    }
+    if (button) updateSize(button.dataset.size);
 });
-orientationToggle.addEventListener('click', () => {
-    isVertical = !isVertical;
-    updateOrientation(isVertical);
-});
+orientationToggle.addEventListener('click', () => updateOrientation(!isVertical));
 lightStickScreen.addEventListener('click', toggleControls);
 dragHandle.addEventListener('click', toggleControls);
 shareButton.addEventListener('click', generateShareQr);
 closeModalButton.addEventListener('click', () => qrcodeModal.classList.add('hidden'));
 copyUrlButton.addEventListener('click', copyShareUrl);
 savePresetButton.addEventListener('click', toggleSaveMode);
+presetContainer.addEventListener('click', (e) => {
+    if (e.target.classList.contains('preset-slot')) {
+        const index = parseInt(e.target.dataset.index, 10);
+        if (isSaveMode) savePreset(index);
+        else loadPreset(index);
+    }
+});
+
+// フルスクリーン機能のイベントリスナー
+fullscreenToggle.addEventListener('click', toggleFullScreen);
+document.addEventListener('fullscreenchange', updateFullscreenUI);
+document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+document.addEventListener('mozfullscreenchange', updateFullscreenUI);
+document.addEventListener('MSFullscreenChange', updateFullscreenUI);
 
 // --- 補助関数 ---
 function updateColor(color) {
@@ -75,15 +82,8 @@ function updateFont(font) {
 }
 function updateSize(size) {
     currentSize = size;
-    const sizeMap = {
-        small: '10vw',
-        medium: '15vw',
-        large: '20vw'
-    };
-    // 画面幅に応じて計算されたフォントサイズを適用
+    const sizeMap = { small: '10vw', medium: '15vw', large: '20vw' };
     displayText.style.fontSize = sizeMap[size] || sizeMap['medium'];
-    
-    // ボタンの見た目を更新
     document.querySelectorAll('.size-button').forEach(btn => {
         btn.classList.toggle('active-size-button', btn.dataset.size === size);
     });
@@ -101,22 +101,50 @@ function toggleControls() {
 }
 function saveCurrentSettings() {
   const settings = {
-    color: hexInput.value,
-    text: textInput.value,
-    font: fontSelect.value,
-    size: currentSize,
-    isVertical: isVertical
+    color: hexInput.value, text: textInput.value, font: fontSelect.value,
+    size: currentSize, isVertical: isVertical
   };
-  // オブジェクトをJSON文字列に変換して保存
   localStorage.setItem('penlightSettings', JSON.stringify(settings));
+}
+
+// --- フルスクリーン機能 ---
+function toggleFullScreen() {
+    try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            const element = document.documentElement;
+            const requestFS = element.requestFullscreen || element.webkitRequestFullscreen || element.msRequestFullscreen;
+            if (requestFS) {
+                requestFS.call(element).catch(err => {
+                     console.error(`フルスクリーンモードへの移行に失敗しました: ${err.name} - ${err.message}`);
+                });
+            }
+        } else {
+            const exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+            if (exitFS) {
+                 exitFS.call(document).catch(err => {
+                    console.error(`フルスクリーンモードの終了に失敗しました: ${err.name} - ${err.message}`);
+                 });
+            }
+        }
+    } catch (e) {
+        console.error("フルスクリーン機能の実行に失敗しました。ブラウザの権限ポリシーによりブロックされた可能性があります。", e);
+    }
+}
+
+function updateFullscreenUI() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        fullscreenText.textContent = 'フルスクリーンを解除';
+    } else {
+        fullscreenText.textContent = 'フルスクリーンにする';
+    }
 }
 
 // --- 共有機能 ---
 function generateShareQr() {
-    // 1. 現在の表示設定をパラメータに追加
     const settings = {
-        c: hexInput.value.replace('#', ''), t: textInput.value,
-        f: fontSelect.value, v: isVertical ? '1' : '0'
+        c: hexInput.value.replace('#', ''), t: textInput.value, f: fontSelect.value, 
+        s: Object.keys({small:'s',medium:'m',large:'l'}).find(k=>currentSize===k) || 'm', 
+        v: isVertical ? '1' : '0'
     };
     const params = new URLSearchParams();
     if(settings.c) params.append('c', settings.c);
@@ -124,28 +152,16 @@ function generateShareQr() {
     if(settings.f) params.append('f', settings.f);
     if(settings.s) params.append('s', settings.s);
     if(settings.v) params.append('v', settings.v);
-
-    // 2. プリセット情報をパラメータに追加
     const presets = getPresets();
     const fontOptions = Array.from(fontSelect.options).map(opt => opt.value);
-    
     const presetStrings = presets.map(p => {
         if (!p) return '';
         const fontIndex = fontOptions.indexOf(p.font);
         if (fontIndex === -1) return '';
-        
-        const color = p.color.replace('#', '');
-        // UTF-8文字列を安全にBase64エンコードする
         const textBase64 = btoa(unescape(encodeURIComponent(p.text)));
-        const vertical = p.isVertical ? '1' : '0';
-        
-        return `${color}~${textBase64}~${fontIndex}~${vertical}`;
+        return `${p.color.replace('#', '')}~${textBase64}~${fontIndex}~${p.isVertical ? '1' : '0'}`;
     }).join('|');
-
-    if (presetStrings) {
-        params.append('p', presetStrings);
-    }
-
+    if (presetStrings) params.append('p', presetStrings);
     const url = `${location.protocol}//${location.host}${location.pathname}?${params.toString()}`;
     shareUrlInput.value = url;
     QRCode.toCanvas(qrcodeCanvas, url, { width: 200, errorCorrectionLevel: 'H' }, (error) => {
@@ -155,9 +171,7 @@ function generateShareQr() {
 }
 function copyShareUrl() {
     shareUrlInput.select();
-    shareUrlInput.setSelectionRange(0, 99999);
     document.execCommand('copy');
-    window.getSelection().removeAllRanges();
     const originalText = copyUrlButton.textContent;
     copyUrlButton.textContent = 'コピー完了';
     setTimeout(() => { copyUrlButton.textContent = originalText; }, 2000);
@@ -170,45 +184,31 @@ function getPresets() {
 }
 function savePreset(index) {
     const presets = getPresets();
-    presets[index] = {
-        color: hexInput.value, text: textInput.value,
-        font: fontSelect.value, isVertical: isVertical
-    };
+    presets[index] = { color: hexInput.value, text: textInput.value, font: fontSelect.value, isVertical: isVertical };
     localStorage.setItem(PRESET_KEY, JSON.stringify(presets));
     showMessage(`プリセット ${index + 1} に保存しました`);
     renderPresetSlots();
     toggleSaveMode();
 }
 function loadPreset(index) {
-    const presets = getPresets();
-    const preset = presets[index];
+    const preset = getPresets()[index];
     if (preset) {
         updateColor(preset.color);
         updateText(preset.text);
         updateFont(preset.font);
         updateOrientation(preset.isVertical);
         showMessage(`プリセット ${index + 1} を読み込みました`);
-    } else {
-        showMessage(`プリセット ${index + 1} は空です`);
     }
 }
 function toggleSaveMode() {
     isSaveMode = !isSaveMode;
     presetContainer.classList.toggle('preset-save-mode', isSaveMode);
     savePresetButton.textContent = isSaveMode ? '保存先のスロットを選択してください' : '現在の設定を保存';
-    if (isSaveMode) {
-        showMessage('保存したいスロットをタップ (もう一度押すとキャンセル)');
-    } else {
-         showMessage('');
-    }
 }
 function getTextColorForBg(hexColor) {
     if (!hexColor || hexColor.length < 7) return 'text-white';
-    const r = parseInt(hexColor.substr(1, 2), 16);
-    const g = parseInt(hexColor.substr(3, 2), 16);
-    const b = parseInt(hexColor.substr(5, 2), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.6 ? 'text-black' : 'text-white';
+    const r = parseInt(hexColor.substr(1, 2), 16), g = parseInt(hexColor.substr(3, 2), 16), b = parseInt(hexColor.substr(5, 2), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? 'text-black' : 'text-white';
 }
 function renderPresetSlots() {
     presetContainer.innerHTML = '';
@@ -219,11 +219,9 @@ function renderPresetSlots() {
         slot.dataset.index = i;
         const baseClasses = 'preset-slot w-full aspect-square rounded-lg cursor-pointer transition-all duration-200 font-bold border-2';
         const preset = presets[i];
-
         if (preset) {
             slot.style.backgroundColor = preset.color;
-            const textColorClass = getTextColorForBg(preset.color);
-            slot.className = `${baseClasses} ${textColorClass} border-gray-400 hover:opacity-80`;
+            slot.className = `${baseClasses} ${getTextColorForBg(preset.color)} border-gray-400 hover:opacity-80`;
         } else {
             slot.className = `${baseClasses} text-white bg-gray-700 hover:bg-gray-600 border-dashed border-gray-600`;
         }
@@ -232,19 +230,8 @@ function renderPresetSlots() {
 }
 function showMessage(text) {
     presetMessage.textContent = text;
-    if(text) {
-        setTimeout(() => {
-            if (presetMessage.textContent === text) presetMessage.textContent = '';
-        }, 3000);
-    }
+    if(text) setTimeout(() => { if (presetMessage.textContent === text) presetMessage.textContent = ''; }, 3000);
 }
-presetContainer.addEventListener('click', (e) => {
-    if (e.target.classList.contains('preset-slot')) {
-        const index = parseInt(e.target.dataset.index, 10);
-        if (isSaveMode) savePreset(index);
-        else loadPreset(index);
-    }
-});
 
 // --- 初期化処理 ---
 function initApp() {
@@ -256,39 +243,24 @@ function initApp() {
         swatch.dataset.color = color;
         colorPalette.appendChild(swatch);
     });
-    colorPalette.addEventListener('click', (e) => {
-        if (e.target.dataset.color) updateColor(e.target.dataset.color);
-    });
+    colorPalette.addEventListener('click', (e) => { if (e.target.dataset.color) updateColor(e.target.dataset.color); });
 
-     // localStorageから前回保存した設定を読み込む
-    const savedSettings = localStorage.getItem('penlightSettings');
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        // 保存された設定がnullでないことを確認してから適用
-        if(settings.color) updateColor(settings.color);
-        if(settings.text) updateText(settings.text);
-        if(settings.font) updateFont(settings.font);
-        if(settings.size) updateSize(settings.size);
-        // isVerticalはブーリアンなので存在チェックのみ
-        if(typeof settings.isVertical !== 'undefined') updateOrientation(settings.isVertical);
-    }
+    const savedSettings = JSON.parse(localStorage.getItem('penlightSettings') || '{}');
+    updateColor(savedSettings.color || '#00aaff');
+    updateText(savedSettings.text || '');
+    updateFont(savedSettings.font || fontSelect.options[0].value);
+    updateSize(savedSettings.size || 'medium');
+    updateOrientation(savedSettings.isVertical || false);
     
     const params = new URLSearchParams(window.location.search);
-
-    // URLからプリセット情報を復元（最優先）
-    const presetsParam = params.get('p');
-    if (presetsParam) {
+    if (params.has('p')) {
         try {
             const fontOptions = Array.from(fontSelect.options).map(opt => opt.value);
-            const presetStrings = presetsParam.split('|');
+            const presetStrings = params.get('p').split('|');
             const newPresets = presetStrings.map(s => {
                 if (!s) return null;
                 const parts = s.split('~');
-                if (parts.length !== 4) return null;
-                
                 const fontIndex = parseInt(parts[2], 10);
-                if (isNaN(fontIndex) || fontIndex >= fontOptions.length) return null;
-
                 return {
                     color: `#${parts[0]}`,
                     text: decodeURIComponent(escape(atob(parts[1]))),
@@ -298,50 +270,43 @@ function initApp() {
             });
             localStorage.setItem(PRESET_KEY, JSON.stringify(newPresets));
             showMessage('プリセットを共有URLから復元しました！');
-        } catch (e) {
-            console.error("Failed to parse presets from URL", e);
-            showMessage('プリセットの復元に失敗しました');
-        }
+        } catch (e) { showMessage('プリセットの復元に失敗'); }
     }
 
-    // URLから現在の表示設定を復元
-    if (params.has('c') || params.has('t') || params.has('f') || params.has('v')) {
-        updateColor(`#${params.get('c') || '00aaff'}`);
-        updateText(params.get('t') || '');
-        updateFont(params.get('f') || fontSelect.options[0].value);
-        updateOrientation(params.get('v') === '1');
+    if (params.has('c')) updateColor(`#${params.get('c')}`);
+    if (params.has('t')) updateText(params.get('t'));
+    if (params.has('f')) updateFont(params.get('f'));
+    if (params.has('v')) updateOrientation(params.get('v') === '1');
+    if (params.has('s')) updateSize({s:'small', m:'medium', l:'large'}[params.get('s')] || 'medium');
 
-        // sizeをURLパラメータから復元
-        const sizeParam = params.get('s');
-        const sizeMap = { s: 'small', m: 'medium', l: 'large' };
-        updateSize(sizeMap[sizeParam] || 'medium');
-    } else {
-        displayText.style.fontFamily = fontSelect.value;
-    }
-
-    // URLをきれいにする
+    // ★★★ URL履歴の操作をエラーハンドリング（修正） ★★★
     try {
         if (window.history.replaceState) {
-            const url = `${location.protocol}//${location.host}${location.pathname}`;
+            const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
             window.history.replaceState({ path: url }, '', url);
         }
-    } catch (e) { console.warn("Could not clean URL:", e); }
+    } catch (e) {
+        console.warn("URLのクリーンアップに失敗しました。サンドボックス環境では動作しない場合があります。", e);
+    }
 
     renderPresetSlots();
     
-    // パネルの高さを動的に調整
     const setControlsHeight = () => {
         const vh = window.innerHeight;
         const panelContent = controls.querySelector('.overflow-y-auto');
         if (panelContent) {
-            // つまみと説明文の高さを考慮
-            const headerHeight = 80; // おおよその高さ
-            panelContent.style.maxHeight = `${vh * 0.6 - headerHeight}px`;
+            const headerHeight = 80;
+            panelContent.style.maxHeight = `${vh * 0.7 - headerHeight}px`;
         }
     };
-    
     window.addEventListener('resize', setControlsHeight);
     setControlsHeight();
+    
+    // フルスクリーンボタンのサポートチェック
+    if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
+        if (fullscreenToggle) {
+            fullscreenToggle.parentElement.style.display = 'none';
+        }
+    }
 }
-
 document.addEventListener('DOMContentLoaded', initApp);

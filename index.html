@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>スマホサイリウム</title>
+    <title>スマホサイリウム（フルスクリーン対応版）</title>
     <!-- QRコード生成ライブラリ -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <!-- Tailwind CSSを使用してUIをきれいにします -->
@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@700&family=Orbitron:wght@700&family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@700&family=Shippori+Mincho:wght@700&family=DotGothic16&display=swap" rel="stylesheet">
+    
+    <!-- PWAマニフェストファイル -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon-192x192.png" type="image/png">
+
     <!-- 外部CSSファイルを読み込み -->
     <link rel="stylesheet" href="style.css">
-
-    <!-- PWAマニフェストファイル (追加) -->
-    <link rel="manifest" href="/WebPenlight/manifest.json">
-    <link rel="icon" href="/WebPenlight/icon-192x192.png" type="image/png">
-
 </head>
 <body class="bg-gray-900 overflow-hidden">
 
@@ -33,10 +33,7 @@
     <!-- 3. 操作パネル -->
     <div id="controls" class="fixed bottom-0 left-0 w-full p-4 bg-gray-800 bg-opacity-80 backdrop-blur-sm rounded-t-2xl shadow-lg z-30 transition-transform duration-300 ease-in-out flex flex-col">
         <div class="max-w-md mx-auto w-full flex-shrink-0">
-            <!-- パネルを上下に動かすためのつまみ -->
             <div id="drag-handle" class="w-16 h-1.5 bg-gray-400 rounded-full mx-auto mb-2 cursor-pointer"></div>
-            
-            <!-- 操作説明 -->
             <p class="text-xs text-gray-400 text-center pb-3">画面の色の部分をタップするとメニューを開閉できます</p>
         </div>
         
@@ -53,9 +50,7 @@
                     </div>
 
                     <!-- カラーパレット -->
-                    <div id="color-palette" class="grid grid-cols-8 gap-2">
-                        <!-- JavaScriptでカラーチップをここに追加します -->
-                    </div>
+                    <div id="color-palette" class="grid grid-cols-8 gap-2"></div>
 
                     <!-- 表示文字の入力 -->
                     <div class="flex items-center space-x-3">
@@ -88,6 +83,13 @@
                         <label class="text-white text-sm font-bold w-20">文字の向き</label>
                         <button id="orientation-toggle" class="w-full bg-gray-600 text-white rounded-lg px-3 py-2 border border-gray-500 hover:bg-gray-500 transition-colors">縦書きにする</button>
                     </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label for="fullscreen-toggle" class="text-white text-sm font-bold w-20">全画面表示</label>
+                        <button id="fullscreen-toggle" class="w-full bg-gray-600 text-white rounded-lg px-3 py-2 border border-gray-500 hover:bg-gray-500 transition-colors">
+                           <span id="fullscreen-text">フルスクリーンにする</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 区切り線 -->
@@ -96,9 +98,7 @@
                 <!-- グループ2: プリセット機能 -->
                 <div class="space-y-2">
                     <label class="text-white text-sm font-bold">プリセット</label>
-                    <div id="preset-container" class="grid grid-cols-5 gap-2">
-                        <!-- JSでプリセットスロットを生成 -->
-                    </div>
+                    <div id="preset-container" class="grid grid-cols-5 gap-2"></div>
                     <button id="save-preset-button" class="w-full bg-indigo-600 text-white rounded-lg px-3 py-2 text-sm border border-indigo-500 hover:bg-indigo-500 transition-colors">現在の設定を保存</button>
                     <p id="preset-message" class="text-xs text-indigo-300 text-center h-4"></p>
                 </div>
@@ -114,15 +114,11 @@
         </div>
     </div>
 
-
     <!-- 4. QRコード表示用モーダル -->
     <div id="qrcode-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl text-center w-11/12 max-w-xs">
             <h3 class="text-lg font-bold mb-4">設定を共有</h3>
-            <!-- QRコードが描画されるキャンバス -->
             <canvas id="qrcode-canvas" class="mx-auto"></canvas>
-            
-            <!-- 共有URL表示欄 -->
             <div class="mt-4">
                 <label class="text-sm text-gray-600 block mb-1">共有URL</label>
                 <div class="flex">
@@ -130,25 +126,23 @@
                     <button id="copy-url-button" class="bg-blue-500 text-white rounded-r-lg px-4 py-2 text-sm hover:bg-blue-600 transition-colors whitespace-nowrap">コピー</button>
                 </div>
             </div>
-
             <button id="close-modal-button" class="mt-6 bg-gray-200 text-gray-800 rounded-lg px-6 py-2 hover:bg-gray-300 transition-colors w-full">閉じる</button>
         </div>
     </div>
 
     <!-- 外部JavaScriptファイルを読み込み -->
     <script src="script.js"></script>
-    <!-- Service Workerの登録 (追加) -->
+    <!-- Service Workerの登録 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/WebPenlight/sw.js').then(registration => {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, err => {
-                    console.log('ServiceWorker registration failed: ', err);
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('SW registered: ', registration);
+                }).catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
                 });
             });
         }
     </script>
 </body>
 </html>
-
