@@ -34,7 +34,7 @@ Web Penlight は、あなたのスマートフォンをライブやイベント�
 
 以下のURLから実際にアプリを体験できます。
 
-https://m-masaki72.github.io/WebPenlight/
+https://penlight.morilab-garage.com/
 
 1. 上記のデモURLにスマートフォンでアクセスします。
 1. 画面下部に表示される操作パネルで、お好みの色やテキスト、フォントを設定します。

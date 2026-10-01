@@ -1,11 +1,11 @@
-const CACHE_NAME = 'スマホサイリウム-v1';
+const CACHE_NAME = 'スマホサイリウム-v2';
 const urlsToCache = [
-  '/WebPenlight/',
-  '/WebPenlight/index.html',
-  '/WebPenlight/style.css',
-  '/WebPenlight/script.js',
-  '/WebPenlight/icons/icon-192x192.png',
-  '/WebPenlight/icons/icon-512x512.png'
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './icons/icon-192x192.png',
+  './icons/icon-512x512.png'
 ];
 
 // インストール時にファイルをキャッシュします
