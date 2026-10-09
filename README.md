@@ -58,3 +58,8 @@ https://penlight.morilab-garage.com/
 ## ライセンス
 
 このプロジェクトは MIT License の下で公開されています。
+
+## 紹介ページ
+
+- [制作物ページ（Mori Lab）](https://morilab-garage.com/projects/web-penlight/)
+- [開発ブログ記事（はてなブログ）](https://mementomori7272.hatenablog.com/entry/2025/10/02/172403)
