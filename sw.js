@@ -1,4 +1,4 @@
-const CACHE_NAME = 'スマホサイリウム-v3';
+const CACHE_NAME = 'スマホサイリウム-v4';
 const urlsToCache = [
   './',
   './index.html',
